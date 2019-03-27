@@ -1,6 +1,6 @@
 <template>
   <a-col :span="18">
-    <h1>模拟边坡工程</h1>
+    <h1>监测概况</h1>
   </a-col>
 </template>
 
@@ -15,5 +15,3 @@ h1 {
   color: black;
 }
 </style>
-
-

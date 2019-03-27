@@ -49,7 +49,7 @@
 </template>
 
 <script>
-import Modal from './components/madal.vue'
+import Modal from './components/modal.vue'
 const columns = [
   { title: '编号', dataIndex: '编号', key: '编号' },
   { title: '工程项目', dataIndex: '工程项目', key: '工程项目' },
@@ -158,7 +158,7 @@ export default {
 /* #components-layout-demo-basic > .ant-layout:last-child {
   margin: 50;
 } */
-h1 {
+.ant-layout-header h1 {
   color: white;
 }
 .ant-layout-content h2 {

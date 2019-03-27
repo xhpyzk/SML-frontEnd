@@ -1,5 +1,5 @@
 <template>
-  <a-row>
+  <a-row class="header">
     <a-col :span="24">
       <h2>xxx工程</h2>
       <h3 @click="backHome">首页</h3>
@@ -21,8 +21,7 @@ export default {
 <style>
 .header {
   height: 50px;
-  /* color: #7dbcea; */
-  color: brown;
+  background: #001529;
 }
 h3 {
   float: right;
@@ -33,5 +32,8 @@ h2 {
   float: left;
   line-height: 50px;
   margin-left: 30px;
+}
+h2, h3 {
+  color: white;
 }
 </style>

@@ -137,7 +137,7 @@ export default {
   background: white;
 }
 #components-layout-demo-basic .ant-layout-header {
-  background: #7dbcea;
+  background: #001529;
   color: #fff;
   height: 120px;
   line-height: 120px;

@@ -1,3 +1,4 @@
+
 <template>
   <div id="components-layout-demo-basic">
     <a-layout>
@@ -17,27 +18,29 @@
         <a-row>
           <a-col :span="8" :offset="4">
             <a-button type="dashed" size="large" @click="showModal">新建工程</a-button>
-            <a-modal
-              title="Title"
-              :visible="true"
-              @ok="handleOk"
-              :confirmLoading="confirmLoading"
-              @cancel="handleCancel"
-            >
-              <p>{{ModalText}}</p>
-            </a-modal>
+            <modal v-show="isVisible" @close="closeModal">
+              <div slot="header">
+                <h3>新建工程</h3>
+                <button type="button" class="btn-close" @click="closeModal">x</button>
+              </div>
+              <div class="content" slot="body">
+                
+              </div>
+              <a-button type="dashed" size="large" slot="footer" @click="closeModal">确定</a-button>
+            </modal>
           </a-col>
           <a-col :span="8">
             <a-button type="dashed" size="large" @click="showModal">加入工程</a-button>
-            <a-modal
-              title="Title"
-              :visible="visible"
-              @ok="handleOk"
-              :confirmLoading="confirmLoading"
-              @cancel="handleCancel"
-            >
-              <p>{{ModalText}}</p>
-            </a-modal>
+            <modal v-show="isVisible" @close="closeModal">
+              <div slot="header">
+                <h3>加入工程</h3>
+                <button type="button" class="btn-close" @click="closeModal">x</button>
+              </div>
+              <div class="content" slot="body">
+                
+              </div>
+              <a-button type="dashed" size="large" slot="footer" @click="closeModal">确定</a-button>
+            </modal>
           </a-col>
         </a-row>
       </a-layout-footer>
@@ -46,6 +49,7 @@
 </template>
 
 <script>
+import Modal from './components/madal.vue'
 const columns = [
   { title: '编号', dataIndex: '编号', key: '编号' },
   { title: '工程项目', dataIndex: '工程项目', key: '工程项目' },
@@ -57,7 +61,6 @@ const columns = [
     scopedSlots: { customRender: 'action' }
   }
 ]
-
 const data = [
   {
     key: 1,
@@ -84,16 +87,16 @@ const data = [
       'My name is Joe Black, I am 32 years old, living in Sidney No. 1 Lake Park.'
   }
 ]
-
 export default {
   name: 'Home',
+  components: {
+    Modal
+  },
   data () {
     return {
       data,
       columns,
-      ModalText: 'Content of the modal',
-      visible: false,
-      confirmLoading: false
+      isVisible: false
     }
   },
   methods: {
@@ -107,8 +110,7 @@ export default {
       }
     },
     showModal () {
-      alert('haha')
-      this.visible = true
+      this.isVisible = true
     },
     handleOk (e) {
       this.ModalText = 'The modal will be closed after two seconds'
@@ -118,9 +120,8 @@ export default {
         this.confirmLoading = false
       }, 2000)
     },
-    handleCancel (e) {
-      console.log('Clicked cancel button')
-      this.visible = false
+    closeModal () {
+      this.isVisible = false
     }
   }
 }
@@ -142,7 +143,6 @@ export default {
   height: 120px;
   line-height: 120px;
 }
-
 #components-layout-demo-basic .ant-layout-content {
   /* background: rgba(16, 142, 233, 1); */
   /* color: #fff; */
@@ -150,6 +150,7 @@ export default {
   line-height: 120px;
   height: 500px;
   background: white;
+  color: #001529;
 }
 #components-layout-demo-basic > .ant-layout {
   margin-bottom: 48px;
@@ -157,20 +158,23 @@ export default {
 /* #components-layout-demo-basic > .ant-layout:last-child {
   margin: 50;
 } */
-
 h1 {
   color: white;
 }
-h2 {
+.ant-layout-content h2 {
+  margin-top: 10px;
   margin-left: 40px;
-  margin-bottom: 0px;
+  margin-bottom: 20px;
   float: left;
+  color: black;
+}
+.ant-layout-footer h3 {
+  color: black;
 }
 .button-style {
   background: rgb(190, 200, 200);
   padding: 26px 16px 16px;
 }
-
 .table-style {
   margin: 40px;
 }

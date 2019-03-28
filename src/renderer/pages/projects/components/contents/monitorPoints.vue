@@ -1,17 +1,22 @@
 <template>
   <a-col :span="18">
-    <h1>监测点</h1>
+    <points-list></points-list>
+    <!-- <new-points></new-points> -->
   </a-col>
 </template>
 
 <script>
+import pointsList from './monitorPointsList'
+import newPoints from './newMonitorPoints'
 export default {
-  name: 'ProjectOverview'
+  name: 'monitorPoints',
+  components: {
+    pointsList,
+    newPoints
+  }
 }
 </script>
 
 <style>
-h1 {
-  color: black;
-}
+
 </style>

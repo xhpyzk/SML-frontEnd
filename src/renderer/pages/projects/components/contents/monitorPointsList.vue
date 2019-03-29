@@ -1,150 +1,114 @@
 <template>
   <div>
-    <p class="notes">监测点列表</p>
-    <br>
-    <a-table :dataSource="data" :columns="columns">
-      <div slot="filterDropdown" slot-scope="{ setSelectedKeys, selectedKeys, confirm, clearFilters, column }" class='custom-filter-dropdown'>
-        <a-input
-          v-ant-ref="c => searchInput = c"
-          :placeholder="`Search ${column.dataIndex}`"
-          :value="selectedKeys[0]"
-          @change="e => setSelectedKeys(e.target.value ? [e.target.value] : [])"
-          @pressEnter="() => handleSearch(selectedKeys, confirm)"
-          style="width: 188px; margin-bottom: 8px; display: block;"
-        />
-        <a-button
-          type='primary'
-          @click="() => handleSearch(selectedKeys, confirm)"
-          icon="search"
-          size="small"
-          style="width: 90px; margin-right: 8px"
-        >Search</a-button>
-        <a-button
-          @click="() => handleReset(clearFilters)"
-          size="small"
-          style="width: 90px"
-        >Reset</a-button>
-      </div>
-      <a-icon slot="filterIcon" slot-scope="filtered" type='search' :style="{ color: filtered ? '#108ee9' : undefined }" />
-      <template slot="customRender" slot-scope="text">
-        <span v-if="searchText">
-          <template v-for="(fragment, i) in text.toString().split(new RegExp(`(?<=${searchText})|(?=${searchText})`, 'i'))">
-            <mark v-if="fragment.toLowerCase() === searchText.toLowerCase()" :key="i" class="highlight">{{fragment}}</mark>
-            <template v-else>{{fragment}}</template>
-          </template>
-        </span>
-        <template v-else>{{text}}</template>
-      </template>
-    </a-table>
+    <a-icon type="form" />
+    <span class="notes">监测点列表</span>
+    <el-table
+      ref="filterTable"
+      :data="tableData"
+      style="width: 100%">
+      <el-table-column
+        prop="date"
+        label="日期"
+        sortable
+        width="180"
+        column-key="date"
+        :filters="[{text: '2016-05-01', value: '2016-05-01'}, {text: '2016-05-02', value: '2016-05-02'}, {text: '2016-05-03', value: '2016-05-03'}, {text: '2016-05-04', value: '2016-05-04'}]"
+        :filter-method="filterHandler"
+      >
+      </el-table-column>
+      <el-table-column
+        prop="name"
+        label="姓名"
+        width="180">
+      </el-table-column>
+      <el-table-column
+        prop="address"
+        label="地址"
+        :formatter="formatter">
+      </el-table-column>
+      <el-table-column
+        prop="tag"
+        label="标签"
+        width="100"
+        :filters="[{ text: '家', value: '家' }, { text: '公司', value: '公司' }]"
+        :filter-method="filterTag"
+        filter-placement="bottom-end">
+        <template slot-scope="scope">
+          <el-tag
+            :type="scope.row.tag === '家' ? 'primary' : 'success'"
+            disable-transitions>{{scope.row.tag}}</el-tag>
+        </template>
+      </el-table-column>
+    </el-table>
+    <div class="block">
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="currentPage4"
+        :page-sizes="[100, 200, 300, 400]"
+        :page-size="100"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="400">
+      </el-pagination>
+    </div>
   </div>
 </template>
 
 <script>
-const data = [{
-  key: '1',
-  name: 'John Brown',
-  age: 32,
-  address: 'New York No. 1 Lake Park'
-}, {
-  key: '2',
-  name: 'Joe Black',
-  age: 42,
-  address: 'London No. 1 Lake Park'
-}, {
-  key: '3',
-  name: 'Jim Green',
-  age: 32,
-  address: 'Sidney No. 1 Lake Park'
-}, {
-  key: '4',
-  name: 'Jim Red',
-  age: 32,
-  address: 'London No. 2 Lake Park'
-}]
-export default {
-  name: 'pointsList',
-  data () {
-    return {
-      data,
-      searchText: '',
-      searchInput: null,
-      columns: [{
-        title: 'Name',
-        dataIndex: 'name',
-        key: 'name',
-        scopedSlots: {
-          filterDropdown: 'filterDropdown',
-          filterIcon: 'filterIcon',
-          customRender: 'customRender'
-        },
-        onFilter: (value, record) => record.name.toLowerCase().includes(value.toLowerCase()),
-        onFilterDropdownVisibleChange: (visible) => {
-          if (visible) {
-            setTimeout(() => {
-              this.searchInput.focus()
-            }, 0)
-          }
-        }
-      }, {
-        title: 'Age',
-        dataIndex: 'age',
-        key: 'age',
-        scopedSlots: {
-          filterDropdown: 'filterDropdown',
-          filterIcon: 'filterIcon',
-          customRender: 'customRender'
-        },
-        onFilter: (value, record) => record.age.toLowerCase().includes(value.toLowerCase()),
-        onFilterDropdownVisibleChange: (visible) => {
-          if (visible) {
-            setTimeout(() => {
-              this.searchInput.focus()
-            })
-          }
-        }
-      }, {
-        title: 'Address',
-        dataIndex: 'address',
-        key: 'address',
-        scopedSlots: {
-          filterDropdown: 'filterDropdown',
-          filterIcon: 'filterIcon',
-          customRender: 'customRender'
-        },
-        onFilter: (value, record) => record.address.toLowerCase().includes(value.toLowerCase()),
-        onFilterDropdownVisibleChange: (visible) => {
-          if (visible) {
-            setTimeout(() => {
-              this.searchInput.focus()
-            })
-          }
-        }
-      }]
-    }
-  },
-  methods: {
-    handleSearch (selectedKeys, confirm) {
-      confirm()
-      this.searchText = selectedKeys[0]
+  export default {
+    name: 'pointsList',
+    data () {
+      return {
+        tableData: [{
+          date: '2016-05-02',
+          name: '王小虎',
+          address: '上海市普陀区金沙江路 1518 弄',
+          tag: '家'
+        }, {
+          date: '2016-05-04',
+          name: '王小虎',
+          address: '上海市普陀区金沙江路 1517 弄',
+          tag: '公司'
+        }, {
+          date: '2016-05-01',
+          name: '王小虎',
+          address: '上海市普陀区金沙江路 1519 弄',
+          tag: '家'
+        }, {
+          date: '2016-05-03',
+          name: '王小虎',
+          address: '上海市普陀区金沙江路 1516 弄',
+          tag: '公司'
+        }],
+        currentPage1: 5,
+        currentPage2: 5,
+        currentPage3: 5,
+        currentPage4: 4
+      }
     },
-
-    handleReset (clearFilters) {
-      clearFilters()
-      this.searchText = ''
+    methods: {
+      resetDateFilter () {
+        this.$refs.filterTable.clearFilter('date')
+      },
+      clearFilter () {
+        this.$refs.filterTable.clearFilter()
+      },
+      formatter (row, column) {
+        return row.address
+      },
+      filterTag (value, row) {
+        return row.tag === value
+      },
+      filterHandler (value, row, column) {
+        const property = column['property']
+        return row[property] === value
+      },
+      handleSizeChange (val) {
+        console.log(`每页 ${val} 条`)
+      },
+      handleCurrentChange (val) {
+        console.log(`当前页: ${val}`)
+      }
     }
   }
-}
 </script>
-
-<style>
-.custom-filter-dropdown {
-  padding: 8px;
-  border-radius: 4px;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
-}
-.highlight {
-  background-color: rgb(255, 192, 105);
-  padding: 0px;
-}
-</style>

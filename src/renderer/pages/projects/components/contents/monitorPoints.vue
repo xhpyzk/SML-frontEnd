@@ -1,7 +1,8 @@
 <template>
-  <a-col :span="18">
+  <a-col :span="17">
     <points-list></points-list>
-    <!-- <new-points></new-points> -->
+    <br>
+    <new-points></new-points>
   </a-col>
 </template>
 

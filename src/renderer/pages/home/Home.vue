@@ -8,10 +8,35 @@
       <a-layout-content>
         <h2>当前所有工程：</h2>
         <div class="table-style">
-          <a-table :columns="columns" :dataSource="data" :customRow="handleClick">
-            <a slot="action" href="javascript:;">删除</a>
-            <p slot="expandedRowRender" slot-scope="record" style="margin: 0">{{record.description}}</p>
-          </a-table>
+          <el-table
+            :row-class-name="tableRowClassName"
+            @row-click="handleClick"
+            :data="tableData"
+            style="width: 100%"
+            >
+            <el-table-column
+                label="编号"
+                prop="id">
+            </el-table-column>
+            <el-table-column
+                label="工程项目"
+                prop="name">
+            </el-table-column>
+            <el-table-column
+                label="项目地点"
+                 prop="location">
+            </el-table-column>
+            <el-table-column label="Action">
+                <template slot-scope="scope">
+                    <el-button
+                    @click.native.prevent="deleteRow(scope.$index, tableData)"
+                    type="text"
+                    size="small">
+                    移除
+                    </el-button>
+                </template>
+            </el-table-column>
+            </el-table>
         </div>
       </a-layout-content>
       <a-layout-footer>
@@ -24,7 +49,6 @@
                 <button type="button" class="btn-close" @click="closeModal">x</button>
               </div>
               <div class="content" slot="body">
-                
               </div>
               <a-button type="dashed" size="large" slot="footer" @click="closeModal">确定</a-button>
             </modal>
@@ -48,45 +72,23 @@
   </div>
 </template>
 
+<style>
+  .demo-table-expand {
+    font-size: 0;
+  }
+  .demo-table-expand label {
+    width: 90px;
+    color: #99a9bf;
+  }
+  .demo-table-expand .el-form-item {
+    margin-right: 0;
+    margin-bottom: 0;
+    width: 50%;
+  }
+</style>
+
 <script>
 import Modal from './components/modal.vue'
-const columns = [
-  { title: '编号', dataIndex: '编号', key: '编号' },
-  { title: '工程项目', dataIndex: '工程项目', key: '工程项目' },
-  { title: '项目地点', dataIndex: '项目地点', key: '项目地点' },
-  {
-    title: 'Action',
-    dataIndex: '',
-    key: 'x',
-    scopedSlots: { customRender: 'action' }
-  }
-]
-const data = [
-  {
-    key: 1,
-    工程项目: 'John Brown',
-    编号: 1,
-    项目地点: 'New York No. 1 Lake Park',
-    description:
-      'My name is John Brown, I am 32 years old, living in New York No. 1 Lake Park.'
-  },
-  {
-    key: 2,
-    工程项目: 'Jim Green',
-    编号: 2,
-    项目地点: 'London No. 1 Lake Park',
-    description:
-      'My name is Jim Green, I am 42 years old, living in London No. 1 Lake Park.'
-  },
-  {
-    key: 3,
-    工程项目: 'Joe Black',
-    编号: 3,
-    项目地点: 'Sidney No. 1 Lake Park',
-    description:
-      'My name is Joe Black, I am 32 years old, living in Sidney No. 1 Lake Park.'
-  }
-]
 export default {
   name: 'Home',
   components: {
@@ -94,20 +96,21 @@ export default {
   },
   data () {
     return {
-      data,
-      columns,
+      tableData: [{
+        id: '12987122',
+        name: 'Alex',
+        location: 'yes'
+      }],
       isVisible: false
     }
   },
   methods: {
-    handleClick (record, index) {
-      return {
-        on: {
-          click: () => {
-            this.$router.push({ path: `/project/${index}` })
-          }
-        }
-      }
+    tableRowClassName ({row, rowIndex}) {
+      row.index = rowIndex
+    },
+    handleClick (row, event, column) {
+      console.log(row.index)
+      this.$router.push({ path: `/project/:${row.index}` })
     },
     showModal () {
       this.isVisible = true
@@ -147,7 +150,7 @@ export default {
   /* background: rgba(16, 142, 233, 1); */
   /* color: #fff; */
   min-height: 120px;
-  line-height: 120px;
+  line-height: 80px;
   height: 500px;
   background: white;
   color: #001529;
@@ -162,9 +165,9 @@ export default {
   color: white;
 }
 .ant-layout-content h2 {
-  margin-top: 10px;
+  margin-top: auto;
   margin-left: 40px;
-  margin-bottom: 20px;
+  margin-bottom: auto;
   float: left;
   color: black;
 }
@@ -176,6 +179,9 @@ export default {
   padding: 26px 16px 16px;
 }
 .table-style {
-  margin: 40px;
+  margin-top: 10px;
+  margin-left: 40px;
+  margin-right: 40px;
+  margin-bottom: 10px;
 }
 </style>

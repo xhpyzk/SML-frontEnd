@@ -5,8 +5,6 @@ import 'ant-design-vue/dist/antd.css'
 import App from './App'
 import router from './router'
 import store from './store'
-import fs from 'fs'
-import sql from 'sql.js'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 
@@ -23,8 +21,3 @@ new Vue({
   store,
   template: '<App/>'
 }).$mount('#app')
-
-var db = new sql.Database()
-var data = db.export()
-var buffer = Buffer.from(data)
-fs.writeFileSync('sml.sqlite', buffer)

@@ -1,4 +1,3 @@
-
 <template>
   <div id="components-layout-demo-basic">
     <a-layout>

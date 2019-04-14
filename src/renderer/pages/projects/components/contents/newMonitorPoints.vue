@@ -49,75 +49,103 @@
 </template>
 
 <script>
-  export default {
-    name: 'newPoints',
-    data () {
-      return {
-        labelPosition: 'right',
-        ruleForm: {
-          name: '',
-          monitorContent: '',
-          xCoordinate: '',
-          yCoordinate: '',
-          zCoordinate: '',
-          maxControlVal: '',
-          minControlVal: '',
-          day: '',
-          shift: ''
-        },
-        rules: {
-          name: [
-            { required: true, message: '请输入名称', trigger: 'blur' },
-            { min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'blur' }
-          ],
-          monitorContent: [
-            { required: true, message: '请选择监测内容', trigger: 'change' }
-          ],
-          xCoordinate: [
-            { required: true, message: '请输入 x 坐标', trigger: 'blur' },
-            { min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'blur' }
-          ],
-          yCoordinate: [
-            { required: true, message: '请输入 y 坐标', trigger: 'blur' },
-            { min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'blur' }
-          ],
-          zCoordinate: [
-            { required: true, message: '请输入 z 坐标', trigger: 'blur' },
-            { min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'blur' }
-          ],
-          maxControlVal: [
-            { required: true, message: '请输入最大控制值', trigger: 'blur' },
-            { min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'blur' }
-          ],
-          minControlVal: [
-            { required: true, message: '请输入最小控制值', trigger: 'blur' },
-            { min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'blur' }
-          ],
-          day: [
-            { required: true, message: '请输入天数', trigger: 'blur' },
-            { min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'blur' }
-          ],
-          shift: [
-            { required: true, message: '请输入控制测量值', trigger: 'blur' },
-            { min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'blur' }
-          ]
-        }
-      }
-    },
-    methods: {
-      submitForm (formName) {
-        this.$refs[formName].validate((valid) => {
-          if (valid) {
-            alert('submit!')
-          } else {
-            console.log('error submit!!')
-            return false
-          }
-        })
+import fs from 'fs'
+import sql from 'sql.js'
+export default {
+  name: 'newPoints',
+  data () {
+    return {
+      labelPosition: 'right',
+      ruleForm: {
+        name: '',
+        monitorContent: '',
+        xCoordinate: '',
+        yCoordinate: '',
+        zCoordinate: '',
+        maxControlVal: '',
+        minControlVal: '',
+        day: '',
+        shift: ''
       },
-      resetForm (formName) {
-        this.$refs[formName].resetFields()
+      rules: {
+        name: [
+          { required: true, message: '请输入名称', trigger: 'blur' },
+          { min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'blur' }
+        ],
+        monitorContent: [
+          { required: true, message: '请选择监测内容', trigger: 'change' }
+        ],
+        xCoordinate: [
+          { required: true, message: '请输入 x 坐标', trigger: 'blur' },
+          { min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'blur' }
+        ],
+        yCoordinate: [
+          { required: true, message: '请输入 y 坐标', trigger: 'blur' },
+          { min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'blur' }
+        ],
+        zCoordinate: [
+          { required: true, message: '请输入 z 坐标', trigger: 'blur' },
+          { min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'blur' }
+        ],
+        maxControlVal: [
+          { required: true, message: '请输入最大控制值', trigger: 'blur' },
+          { min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'blur' }
+        ],
+        minControlVal: [
+          { required: true, message: '请输入最小控制值', trigger: 'blur' },
+          { min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'blur' }
+        ],
+        day: [
+          { required: true, message: '请输入天数', trigger: 'blur' },
+          { min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'blur' }
+        ],
+        shift: [
+          { required: true, message: '请输入控制测量值', trigger: 'blur' },
+          { min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'blur' }
+        ]
       }
     }
+  },
+  methods: {
+    submitForm (formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          alert('saving')
+          this.saveData()
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
+    },
+    resetForm (formName) {
+      this.$refs[formName].resetFields()
+    },
+    saveData () {
+      // let insertSql = 'INSERT INTO monitorPoints VALUES '
+      // let values = `(
+      //   ${this.ruleForm.name},
+      //   ${1},
+      //   ${2},
+      //   ${this.ruleForm.xCoordinate},
+      //   ${this.ruleForm.yCoordinate},
+      //   ${this.ruleForm.zCoordinate},
+      //   ${this.ruleForm.day},
+      //   ${this.ruleForm.shift}
+      // );`
+      // insertSql += values
+      let insertSql = `INSERT INTO monitorPoints 
+      ("name", "projectId", "monitorContentId", "xCoordinate", "yCoordinate", "zCoordinate", "maxDays", "displacement")
+      VALUES ("3-2", 1, 2, 1, 2, 3, 12, 1);
+      `
+      let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
+      let db = new sql.Database(fileBuffer)
+      db.run(insertSql)
+      let data = db.export()
+      let buffer = Buffer.from(data)
+      fs.writeFileSync('src/database/sml.sqlite', buffer)
+      alert('success')
+    }
   }
+}
 </script>

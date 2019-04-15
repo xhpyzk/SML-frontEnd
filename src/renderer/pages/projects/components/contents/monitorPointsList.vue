@@ -49,23 +49,19 @@
       </el-table-column> -->
       <el-table-column
         prop="maxControlVal"
-        label="最大控制值"
-        :formatter="formatter">
+        label="最大控制值">
       </el-table-column>
       <el-table-column
         prop="minControlVal"
-        label="最小控制值"
-        :formatter="formatter">
+        label="最小控制值">
       </el-table-column>
       <el-table-column
         prop="maxDays"
-        label="控制天数"
-        :formatter="formatter">
+        label="控制天数">
       </el-table-column>
       <el-table-column
         prop="displacement"
-        label="控制值"
-        :formatter="formatter">
+        label="控制值">
       </el-table-column>
     </el-table>
     <!-- <div class="block">
@@ -96,9 +92,6 @@ export default {
     },
     clearFilter () {
       this.$refs.filterTable.clearFilter()
-    },
-    formatter (row, column) {
-      return row.address
     },
     filterTag (value, row) {
       return row.tag === value

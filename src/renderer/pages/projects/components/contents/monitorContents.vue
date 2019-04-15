@@ -6,7 +6,7 @@
              :label-position="labelPosition"
     >
       <el-form-item label="监测类别" prop="monitorCategory">
-        <el-input v-model="ruleForm.name"></el-input>
+        <el-input v-model="ruleForm.monitorCategory"></el-input>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="submitForm('ruleForm')">确认</el-button>
@@ -31,38 +31,51 @@
 </template>
 
 <script>
-  export default {
-    name: 'monitorContents',
-    data () {
-      return {
-        labelPosition: 'right',
-        ruleForm: {
-          monitorCategory: ''
-        },
-        rules: {
-          monitorCategory: [
-            { required: true, message: '请输入监测类别', trigger: 'blur' },
-            { min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'blur' }
-          ]
-        }
-      }
-    },
-    methods: {
-      submitForm (formName) {
-        this.$refs[formName].validate((valid) => {
-          if (valid) {
-            alert('submit!')
-          } else {
-            console.log('error submit!!')
-            return false
-          }
-        })
+import fs from 'fs'
+import sql from 'sql.js'
+export default {
+  name: 'monitorContents',
+  data () {
+    return {
+      labelPosition: 'right',
+      ruleForm: {
+        monitorCategory: ''
       },
-      resetForm (formName) {
-        this.$refs[formName].resetFields()
+      rules: {
+        monitorCategory: [
+          { required: true, message: '请输入监测类别', trigger: 'blur' }
+        ]
       }
     }
+  },
+  methods: {
+    submitForm (formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          this.saveData()
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
+    },
+    resetForm (formName) {
+      this.$refs[formName].resetFields()
+    },
+    saveData () {
+      let insertSql = `INSERT INTO monitorContent ("monitorCategory") VALUES ("${this.ruleForm.monitorCategory}");`
+      let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
+      let db = new sql.Database(fileBuffer)
+      console.log(db.exec('SELECT * FROM monitorContent'))
+      alert(insertSql)
+      db.run(insertSql)
+      let data = db.export()
+      let buffer = Buffer.from(data)
+      fs.writeFileSync('src/database/sml.sqlite', buffer)
+      alert('success')
+    }
   }
+}
 </script>
 
 <style>

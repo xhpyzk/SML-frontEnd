@@ -66,11 +66,18 @@
         </el-pagination>
       </div>
     </div>
+    <div class="more-space small-size">
+      <a-upload-dragger name="file" :multiple="true" @change="handleChange">
+        <p class="ant-upload-drag-icon">
+          <a-icon type="inbox" />
+        </p>
+        <p class="ant-upload-text">点击或直接拖拽文件到此区域进行上传</p>
+      </a-upload-dragger>
+    </div>
   </a-col>
 </template>
 
 <script>
-// import reqwest from 'reqwest'
 const columns = [{
   title: 'Name',
   dataIndex: 'name',
@@ -89,7 +96,6 @@ const columns = [{
   title: 'Email',
   dataIndex: 'email'
 }]
-
 export default {
   name: 'monitorOverview',
   data () {
@@ -106,6 +112,32 @@ export default {
       const pager = { ...this.pagination }
       pager.current = pagination.current
       this.pagination = pager
+    },
+    handleChange (info) {
+      let f = info.file
+      console.log(f)
+      // let rABS = false
+      // let reader = new FileReader()
+      // reader.onload = function (e) {
+      //   var data = e.target.result
+      //     wb = XLSX.read(data, {
+      //       type: 'binary'
+      //   }
+      //   console.log(JSON.stringify(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])))
+      // }
+      // if (rABS) {
+      //   reader.readAsArrayBuffer(f)
+      // } else {
+      //   reader.readAsBinaryString(f)
+      // }
+    },
+    fixdata (data) {
+      let o = ''
+      let l = 0
+      let w = 10240
+      for (; l < data.byteLength / w; ++l) o += String.fromCharCode.apply(null, new Uint8Array(data.slice(l * w, l * w + w)))
+      o += String.fromCharCode.apply(null, new Uint8Array(data.slice(l * w)))
+      return o
     }
   }
 }
@@ -117,5 +149,14 @@ export default {
 }
 .more-space {
   margin-top: 20px;
+  margin-right: 40px;
+}
+.small-size {
+  width: 30%;
+  height: 30%;
+}
+.dropbox {
+  height: 180px;
+  line-height: 1.5;
 }
 </style>

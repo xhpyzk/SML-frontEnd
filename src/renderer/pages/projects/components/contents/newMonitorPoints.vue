@@ -11,8 +11,10 @@
       </el-form-item>
       <el-form-item label="监测内容" prop="monitorContent">
         <el-select v-model="ruleForm.monitorContent" placeholder="请选择监测内容">
-          <el-option label="区域一" value="shanghai"></el-option>
-          <el-option label="区域二" value="beijing"></el-option>
+          <el-option v-for="content in monitorContents" :key="content[0]"
+                    :label="content[1]" :value="content[0]"
+          >
+          </el-option>
         </el-select>
       </el-form-item>
       <br>
@@ -54,8 +56,13 @@ import sql from 'sql.js'
 export default {
   name: 'newPoints',
   data () {
+    let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
+    let db = new sql.Database(fileBuffer)
+    let queryMonitorContent = 'SELECT * FROM monitorContent'
+    let monitorContents = db.exec(queryMonitorContent)[0].values
     return {
       labelPosition: 'right',
+      monitorContents,
       ruleForm: {
         name: '',
         monitorContent: '',
@@ -122,24 +129,24 @@ export default {
       this.$refs[formName].resetFields()
     },
     saveData () {
-      // let insertSql = 'INSERT INTO monitorPoints VALUES '
-      // let values = `(
-      //   ${this.ruleForm.name},
-      //   ${1},
-      //   ${2},
-      //   ${this.ruleForm.xCoordinate},
-      //   ${this.ruleForm.yCoordinate},
-      //   ${this.ruleForm.zCoordinate},
-      //   ${this.ruleForm.day},
-      //   ${this.ruleForm.shift}
-      // );`
-      // insertSql += values
-      let insertSql = `INSERT INTO monitorPoints 
-      ("name", "projectId", "monitorContentId", "xCoordinate", "yCoordinate", "zCoordinate", "maxDays", "displacement")
-      VALUES ("3-2", 1, 2, 1, 2, 3, 12, 1);
-      `
       let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
       let db = new sql.Database(fileBuffer)
+      let insertSql = `INSERT INTO monitorPoints 
+      ("name", "projectId", "monitorContentId", "xCoordinate", "yCoordinate", "zCoordinate", "maxControlVal", "minControlVal", "maxDays", "displacement") 
+      VALUES `
+      let values = `("${this.ruleForm.name}",
+        ${this.$route.params.id},
+        ${this.ruleForm.monitorContent},
+        ${this.ruleForm.xCoordinate},
+        ${this.ruleForm.yCoordinate},
+        ${this.ruleForm.zCoordinate},
+        ${this.ruleForm.maxControlVal},
+        ${this.ruleForm.minControlVal},
+        ${this.ruleForm.day},
+        ${this.ruleForm.shift}
+      );`
+      insertSql += values
+      console.log(insertSql)
       db.run(insertSql)
       let data = db.export()
       let buffer = Buffer.from(data)

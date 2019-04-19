@@ -78,6 +78,7 @@
 </template>
 
 <script>
+import XLSX from 'xlsx'
 const columns = [{
   title: 'Name',
   dataIndex: 'name',
@@ -115,29 +116,17 @@ export default {
     },
     handleChange (info) {
       let f = info.file
-      console.log(f)
-      // let rABS = false
-      // let reader = new FileReader()
-      // reader.onload = function (e) {
-      //   var data = e.target.result
-      //     wb = XLSX.read(data, {
-      //       type: 'binary'
-      //   }
-      //   console.log(JSON.stringify(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])))
-      // }
-      // if (rABS) {
-      //   reader.readAsArrayBuffer(f)
-      // } else {
-      //   reader.readAsBinaryString(f)
-      // }
-    },
-    fixdata (data) {
-      let o = ''
-      let l = 0
-      let w = 10240
-      for (; l < data.byteLength / w; ++l) o += String.fromCharCode.apply(null, new Uint8Array(data.slice(l * w, l * w + w)))
-      o += String.fromCharCode.apply(null, new Uint8Array(data.slice(l * w)))
-      return o
+      let reader = new FileReader()
+      reader.onload = function (e) {
+        let data = e.target.result
+        let wb = XLSX.read(data, {
+          type: 'binary'
+        })
+        let json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])
+        console.log('pass')
+        console.log(JSON.stringify(json))
+      }
+      reader.readAsText(f.originFileObj)
     }
   }
 }

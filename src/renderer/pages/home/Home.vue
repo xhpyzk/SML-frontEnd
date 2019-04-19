@@ -103,7 +103,12 @@ export default {
       return {
         on: {
           click: () => {
-            this.$router.push({ path: `/project/${index}` })
+            this.$router.push({
+              name: '/project',
+              params: {
+                id: index
+              }
+            })
           }
         }
       }

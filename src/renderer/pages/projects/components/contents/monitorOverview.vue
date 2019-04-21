@@ -21,14 +21,9 @@
         :data="tableData"
         style="width: 100%">
         <el-table-column
-          prop="date"
-          label="日期"
-          sortable
-          width="180"
-          column-key="date"
-          :filters="[{text: '2016-05-01', value: '2016-05-01'}, {text: '2016-05-02', value: '2016-05-02'}, {text: '2016-05-03', value: '2016-05-03'}, {text: '2016-05-04', value: '2016-05-04'}]"
-          :filter-method="filterHandler"
-        >
+          prop="name"
+          label="姓名"
+          width="180">
         </el-table-column>
         <el-table-column
           prop="name"
@@ -41,17 +36,24 @@
           :formatter="formatter">
         </el-table-column>
         <el-table-column
-          prop="tag"
-          label="标签"
-          width="100"
-          :filters="[{ text: '家', value: '家' }, { text: '公司', value: '公司' }]"
-          :filter-method="filterTag"
-          filter-placement="bottom-end">
-          <template slot-scope="scope">
-            <el-tag
-              :type="scope.row.tag === '家' ? 'primary' : 'success'"
-              disable-transitions>{{scope.row.tag}}</el-tag>
-          </template>
+          prop="name"
+          label="姓名"
+          width="180">
+        </el-table-column>
+        <el-table-column
+          prop="name"
+          label="姓名"
+          width="180">
+        </el-table-column>
+        <el-table-column
+          prop="name"
+          label="姓名"
+          width="180">
+        </el-table-column>
+        <el-table-column
+          prop="address"
+          label="地址"
+          :formatter="formatter">
         </el-table-column>
       </el-table>
       <div class="block">
@@ -67,18 +69,17 @@
       </div>
     </div>
     <div class="more-space small-size">
-      <a-upload-dragger name="file" :multiple="true" @change="handleChange">
-        <p class="ant-upload-drag-icon">
-          <a-icon type="inbox" />
-        </p>
-        <p class="ant-upload-text">点击或直接拖拽文件到此区域进行上传</p>
-      </a-upload-dragger>
+      <a href="javascript:;" class="file">上传文件
+        <input type="file" name="" id="" @change="onChange($event)">
+      </a>
     </div>
   </a-col>
 </template>
 
 <script>
 import XLSX from 'xlsx'
+import sql from 'sql.js'
+import fs from 'fs'
 const columns = [{
   title: 'Name',
   dataIndex: 'name',
@@ -101,6 +102,7 @@ export default {
   name: 'monitorOverview',
   data () {
     return {
+      tableData: this.readData(),
       data: [],
       pagination: {},
       loading: false,
@@ -114,19 +116,61 @@ export default {
       pager.current = pagination.current
       this.pagination = pager
     },
-    handleChange (info) {
-      let f = info.file
+    onChange (event) {
+      let file = event.target.files[0]
       let reader = new FileReader()
-      reader.onload = function (e) {
-        let data = e.target.result
-        let wb = XLSX.read(data, {
-          type: 'binary'
-        })
-        let json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])
-        console.log('pass')
-        console.log(JSON.stringify(json))
+      reader.onload = function (evt) {
+        try {
+          let data = evt.target.result
+          let workbook = XLSX.read(data, {
+            type: 'binary'
+          })
+          let buildings = []
+          for (let sheet in workbook.Sheets) {
+            if (workbook.Sheets.hasOwnProperty(sheet)) {
+              // let fromTo = workbook.Sheets[sheet]['!ref']
+              buildings = buildings.concat(XLSX.utils.sheet_to_json(workbook.Sheets[sheet]))
+              // break; // 如果只取第一张sheet表，就取消注释这行
+            }
+          }
+          // let fileRows = buildings.length - 1
+          // 读取已经存在的所有监测点
+          let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
+          let db = new sql.Database(fileBuffer)
+          let uploadData
+          let hours
+          let day
+          let insertSql = ``
+          for (let i = 0; i < buildings.length; i++) {
+            uploadData = Object.values(buildings[i])
+            hours = Object.keys(buildings[i]).slice(2)
+            day = uploadData[0]
+            for (let i = 0; i < 24; i++) {
+              insertSql += `INSERT INTO "${uploadData[1]}" (
+              "days", "hours", "monitorValues"
+              ) VALUES (
+                ${day}, "${hours[i]}", ${uploadData[i + 2]}
+              );`
+            }
+            db.run(insertSql)
+            let data = db.export()
+            let buffer = Buffer.from(data)
+            fs.writeFileSync('src/database/sml.sqlite', buffer)
+            alert('success')
+          }
+        } catch (e) {
+          console.log('文件类型不正确', e)
+        }
       }
-      reader.readAsText(f.originFileObj)
+      reader.readAsBinaryString(file)
+    },
+    readData () {
+      let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
+      let db = new sql.Database(fileBuffer)
+      let queryAllMonitorPoints = `SELECT name, maxControlval, monitorContentId FROM monitorPoints WHERE projectId = ${this.$route.params.id}`
+      let allMonitorPoints = db.exec(queryAllMonitorPoints)
+      let keys = allMonitorPoints[0].columns
+      let values = allMonitorPoints[0].values
     }
   }
 }
@@ -147,5 +191,31 @@ export default {
 .dropbox {
   height: 180px;
   line-height: 1.5;
+}
+.file {
+  position: relative;
+  display: inline-block;
+  background: #D0EEFF;
+  border: 1px solid #99D3F5;
+  border-radius: 4px;
+  padding: 4px 12px;
+  overflow: hidden;
+  color: #1E88C7;
+  text-decoration: none;
+  text-indent: 0;
+  line-height: 20px;
+}
+.file input {
+    position: absolute;
+    font-size: 100px;
+    right: 0;
+    top: 0;
+    opacity: 0;
+}
+.file:hover {
+    background: #AADFFD;
+    border-color: #78C3F3;
+    color: #004974;
+    text-decoration: none;
 }
 </style>

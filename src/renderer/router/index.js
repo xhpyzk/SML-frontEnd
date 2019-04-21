@@ -10,7 +10,6 @@ export default new Router({
     {
       path: '/',
       name: 'Home',
-      // component: require('@/pages/home/Home.vue').default
       component: Home
     },
     {

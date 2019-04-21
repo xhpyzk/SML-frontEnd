@@ -146,8 +146,23 @@ export default {
         ${this.ruleForm.shift}
       );`
       insertSql += values
-      console.log(insertSql)
       db.run(insertSql)
+      // 创建该监测点的监测数据表
+      let createTable = `
+      CREATE TABLE "main"."${this.ruleForm.name}" (
+        "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        "days" integer NOT NULL,
+        "hours" char NOT NULL,
+        "monitorValues" float NOT NULL
+      );
+
+      CREATE UNIQUE INDEX "main"."monitorPointsDataId"
+      ON "${this.ruleForm.name}" (
+        "id" COLLATE BINARY ASC,
+        "monitorPointsName" COLLATE BINARY ASC
+      );
+      `
+      db.run(createTable)
       let data = db.export()
       let buffer = Buffer.from(data)
       fs.writeFileSync('src/database/sml.sqlite', buffer)

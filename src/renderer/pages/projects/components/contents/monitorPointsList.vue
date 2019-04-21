@@ -109,7 +109,7 @@ export default {
     readData () {
       let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
       let db = new sql.Database(fileBuffer)
-      let readRes = db.exec('SELECT * FROM monitorPoints')
+      let readRes = db.exec(`SELECT * FROM monitorPoints WHERE projectId = ${this.$route.params.id}`)
       let keys = readRes[0].columns
       let values = readRes[0].values
       let data = new Array(values.length)

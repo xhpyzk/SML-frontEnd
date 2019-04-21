@@ -100,11 +100,12 @@ export default {
   },
   methods: {
     handleClick (record, index) {
+      // alert(index)
       return {
         on: {
           click: () => {
             this.$router.push({
-              name: '/project',
+              name: 'Project',
               params: {
                 id: index
               }

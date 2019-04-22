@@ -17,62 +17,53 @@
       </ul>
       <br>
       <el-table
-        ref="filterTable"
         :data="tableData"
-        style="width: 100%">
+        :fit="true"
+        style="width: 90%">
         <el-table-column
-          prop="name"
-          label="姓名"
-          width="180">
+          prop="id"
+          label="编号">
         </el-table-column>
         <el-table-column
-          prop="name"
-          label="姓名"
-          width="180">
+          prop="monitorContent"
+          label="监测内容">
         </el-table-column>
         <el-table-column
-          prop="address"
-          label="地址"
-          :formatter="formatter">
+          prop="sum"
+          label="总数量">
         </el-table-column>
         <el-table-column
-          prop="name"
-          label="姓名"
-          width="180">
+          prop="safety"
+          label="安全">
         </el-table-column>
         <el-table-column
-          prop="name"
-          label="姓名"
-          width="180">
+          prop="attention"
+          label="注意">
         </el-table-column>
         <el-table-column
-          prop="name"
-          label="姓名"
-          width="180">
+          prop="warning"
+          label="警告">
         </el-table-column>
         <el-table-column
-          prop="address"
-          label="地址"
-          :formatter="formatter">
+          prop="danger"
+          label="危险">
         </el-table-column>
       </el-table>
-      <div class="block">
-        <el-pagination
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-          :current-page="currentPage4"
-          :page-sizes="[100, 200, 300, 400]"
-          :page-size="100"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="400">
-        </el-pagination>
-      </div>
+      <el-pagination
+      :page-size="pageSize"
+      :pager-count="11"
+      layout="prev, pager, next"
+      :total="allData.length"
+      @current-change="handleCurrentChange"
+      >
+      </el-pagination>
     </div>
     <div class="more-space small-size">
       <a href="javascript:;" class="file">上传文件
         <input type="file" name="" id="" @change="onChange($event)">
       </a>
     </div>
+    <Draw></Draw>
   </a-col>
 </template>
 
@@ -80,42 +71,22 @@
 import XLSX from 'xlsx'
 import sql from 'sql.js'
 import fs from 'fs'
-const columns = [{
-  title: 'Name',
-  dataIndex: 'name',
-  sorter: true,
-  width: '20%',
-  scopedSlots: { customRender: 'name' }
-}, {
-  title: 'Gender',
-  dataIndex: 'gender',
-  filters: [
-    { text: 'Male', value: 'male' },
-    { text: 'Female', value: 'female' }
-  ],
-  width: '20%'
-}, {
-  title: 'Email',
-  dataIndex: 'email'
-}]
+import Draw from './draw'
 export default {
   name: 'monitorOverview',
+  components: {
+    Draw
+  },
   data () {
+    let allData = this.readData()
+    let pageSize = 3
     return {
-      tableData: this.readData(),
-      data: [],
-      pagination: {},
-      loading: false,
-      columns
+      pageSize,
+      allData,
+      tableData: allData.slice(0, pageSize)
     }
   },
   methods: {
-    handleTableChange (pagination, filters, sorter) {
-      console.log(pagination)
-      const pager = { ...this.pagination }
-      pager.current = pagination.current
-      this.pagination = pager
-    },
     onChange (event) {
       let file = event.target.files[0]
       let reader = new FileReader()
@@ -169,8 +140,65 @@ export default {
       let db = new sql.Database(fileBuffer)
       let queryAllMonitorPoints = `SELECT name, maxControlval, monitorContentId FROM monitorPoints WHERE projectId = ${this.$route.params.id}`
       let allMonitorPoints = db.exec(queryAllMonitorPoints)
-      let keys = allMonitorPoints[0].columns
+      // let keys = allMonitorPoints[0].columns
       let values = allMonitorPoints[0].values
+      let queryAllMonitorContent = `SELECT * FROM monitorContent`
+      let allMonitorContent = db.exec(queryAllMonitorContent)[0].values
+      // 构造监测内容 id 哈希表
+      let monitorContentMap = {}
+      for (let j = 0; j < allMonitorContent.length; j++) {
+        monitorContentMap[allMonitorContent[j][0]] = allMonitorContent[j][1]
+      }
+      let uniqueMonitorContent = []
+      for (let k = 0; k < values.length; k++) {
+        if (uniqueMonitorContent.indexOf(monitorContentMap[values[k][2]]) === -1) {
+          uniqueMonitorContent.push(monitorContentMap[values[k][2]])
+        }
+      }
+      // 获取当前所有监测内容
+      let items = new Array(uniqueMonitorContent.length)
+      for (let m = 0; m < uniqueMonitorContent.length; m++) {
+        let total = 0
+        let safety = 0
+        let attention = 0
+        let warning = 0
+        let danger = 0
+        for (let n = 0; n < values.length; n++) {
+          if (uniqueMonitorContent[m] === monitorContentMap[values[n][2]]) {
+            let queryMonitorVal = `SELECT monitorValues FROM "${values[n][0]}"`
+            let monitorVals = db.exec(queryMonitorVal)
+            if (monitorVals.length === 0) continue
+            total++
+            let lastMonitorVal = monitorVals[0].values.slice(-1)[0][0]
+            let percentage = lastMonitorVal / values[n][1]
+            if (percentage < 0.6) {
+              safety++
+            } else if (percentage < 0.8) {
+              attention++
+            } else if (percentage < 1.0) {
+              warning++
+            } else {
+              danger++
+            }
+          }
+        }
+        if (total === 0) continue
+        items[m] = {
+          id: m,
+          monitorContent: uniqueMonitorContent[m],
+          sum: total,
+          safety,
+          attention,
+          warning,
+          danger
+        }
+      }
+      return items
+    },
+    handleCurrentChange (val) {
+      let start = this.pageSize * (val - 1)
+      let end = this.pageSize * val
+      this.tableData = this.allData.slice(start, end)
     }
   }
 }

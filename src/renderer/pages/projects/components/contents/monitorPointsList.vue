@@ -9,12 +9,7 @@
       <el-table-column
         prop="name"
         label="名称"
-        sortable
-        width="120"
-        column-key="name"
-        :filters="[{text: '2016-05-01', value: '2016-05-01'}, {text: '2016-05-02', value: '2016-05-02'}, {text: '2016-05-03', value: '2016-05-03'}, {text: '2016-05-04', value: '2016-05-04'}]"
-        :filter-method="filterHandler"
-      >
+        width="120">
       </el-table-column>
       <el-table-column
         prop="monitorContent"
@@ -33,20 +28,6 @@
         prop="zCoordinate"
         label="z 坐标">
       </el-table-column>
-      <!-- <el-table-column
-        prop="safetyLevel"
-        label="安全水平"
-        width="100"
-        :filters="[{ text: '家', value: '家' }, { text: '公司', value: '公司' }]"
-        :filter-method="filterTag"
-        filter-placement="bottom-end">
-        <template slot-scope="scope">
-          <el-tag
-            :type="scope.row.tag === '家' ? 'primary' : 'success'"
-            disable-transitions>{{scope.row.tag}}
-          </el-tag>
-        </template>
-      </el-table-column> -->
       <el-table-column
         prop="maxControlVal"
         label="最大控制值">
@@ -64,17 +45,14 @@
         label="控制值">
       </el-table-column>
     </el-table>
-    <!-- <div class="block">
-      <el-pagination
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        :current-page="currentPage4"
-        :page-sizes="[100, 200, 300, 400]"
-        :page-size="100"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="400">
-      </el-pagination>
-    </div> -->
+    <el-pagination
+      :page-size="pageSize"
+      :pager-count="11"
+      layout="prev, pager, next"
+      :total="values.length"
+      @current-change="handleCurrentChange"
+    >
+    </el-pagination>
   </div>
 </template>
 
@@ -84,34 +62,25 @@ import sql from 'sql.js'
 export default {
   name: 'pointsList',
   data () {
-    return {tableData: this.readData()}
+    let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
+    let db = new sql.Database(fileBuffer)
+    let readRes = db.exec(`SELECT * FROM monitorPoints WHERE projectId = ${this.$route.params.id}`)[0]
+    let keys = readRes.columns
+    let values = readRes.values
+    let allData = this.readData(keys, values, db)
+    let pageSize = 3
+    return {
+      db,
+      keys,
+      values,
+      pageSize,
+      allData,
+      // tableHeight: 320,
+      tableData: allData.slice(0, pageSize)
+    }
   },
   methods: {
-    resetDateFilter () {
-      this.$refs.filterTable.clearFilter('date')
-    },
-    clearFilter () {
-      this.$refs.filterTable.clearFilter()
-    },
-    filterTag (value, row) {
-      return row.tag === value
-    },
-    filterHandler (value, row, column) {
-      const property = column['property']
-      return row[property] === value
-    },
-    handleSizeChange (val) {
-      console.log(`每页 ${val} 条`)
-    },
-    handleCurrentChange (val) {
-      console.log(`当前页: ${val}`)
-    },
-    readData () {
-      let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
-      let db = new sql.Database(fileBuffer)
-      let readRes = db.exec(`SELECT * FROM monitorPoints WHERE projectId = ${this.$route.params.id}`)
-      let keys = readRes[0].columns
-      let values = readRes[0].values
+    readData (keys, values, db) {
       let data = new Array(values.length)
       let item
       for (var i = 0; i < data.length; i++) {
@@ -127,8 +96,12 @@ export default {
         }
         data[i] = item
       }
-      // console.log(data)
       return data
+    },
+    handleCurrentChange (val) {
+      let start = this.pageSize * (val - 1)
+      let end = this.pageSize * val
+      this.tableData = this.allData.slice(start, end)
     }
   }
 }

@@ -146,7 +146,7 @@ export default {
         ${this.ruleForm.shift}
       );`
       insertSql += values
-      db.run(insertSql)
+      // db.run(insertSql)
       // 创建该监测点的监测数据表
       let createTable = `
       CREATE TABLE "main"."${this.ruleForm.name}" (
@@ -156,17 +156,32 @@ export default {
         "monitorValues" float NOT NULL
       );
 
-      CREATE UNIQUE INDEX "main"."monitorPointsDataId"
+      CREATE UNIQUE INDEX "main"."${this.ruleForm.name}-monitorDataId"
       ON "${this.ruleForm.name}" (
-        "id" COLLATE BINARY ASC,
-        "monitorPointsName" COLLATE BINARY ASC
+        "id" COLLATE BINARY ASC
+      );
+
+      CREATE INDEX "main"."${this.ruleForm.name}-monitorDays"
+      ON "${this.ruleForm.name}" (
+        "days" COLLATE BINARY ASC
+      );
+
+      CREATE INDEX "main"."${this.ruleForm.name}-monitorHours"
+      ON "${this.ruleForm.name}" (
+        "hours" COLLATE BINARY ASC
+      );
+
+      CREATE INDEX "main"."${this.ruleForm.name}-monitorValues"
+      ON "${this.ruleForm.name}" (
+        "monitorValues" COLLATE BINARY ASC
       );
       `
-      db.run(createTable)
+      db.run(insertSql + createTable)
       let data = db.export()
       let buffer = Buffer.from(data)
       fs.writeFileSync('src/database/sml.sqlite', buffer)
       alert('success')
+      location.reload()
     }
   }
 }

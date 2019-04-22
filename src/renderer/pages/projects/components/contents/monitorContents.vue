@@ -67,7 +67,6 @@ export default {
       let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
       let db = new sql.Database(fileBuffer)
       console.log(db.exec('SELECT * FROM monitorContent'))
-      alert(insertSql)
       db.run(insertSql)
       let data = db.export()
       let buffer = Buffer.from(data)

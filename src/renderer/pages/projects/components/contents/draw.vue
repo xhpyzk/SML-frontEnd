@@ -1,86 +1,146 @@
 <template>
-  <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
-    <el-form-item label="监测点" prop="region">
-      <el-select v-model="ruleForm.region" placeholder="请选择监测点">
-        <el-option label="区域一" value="shanghai"></el-option>
-        <el-option label="区域二" value="beijing"></el-option>
-      </el-select>
-    </el-form-item>
-    <el-form-item label="施工天数" required>
-      <el-col :span="2">
-        <el-form-item prop="start">
-          <el-input v-model="ruleForm.start"></el-input>
+<div>
+  <el-row>
+    <el-col :span="10">
+      <el-alert
+        title="errorInfo"
+        type="error"
+        center
+        :show-icon="true"
+        v-show="error"
+        style="width: 350px">
+      </el-alert>
+      <br>
+      <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+        <el-form-item label="监测点" prop="point">
+          <el-select v-model="ruleForm.point" placeholder="请选择监测点">
+            <el-option v-for="point in allPoints" :key="point[0]"
+            :label="point[1]" :value="point[1]"           
+            >
+            </el-option>
+          </el-select>
         </el-form-item>
-      </el-col>
-      <el-col class="line" :span="0.5">----</el-col>
-      <el-col :span="2">
-        <el-form-item prop="end">
-          <el-input v-model="ruleForm.end"></el-input>
+        <el-form-item label="施工天数">
+          <el-col :span="6">
+            <el-form-item prop="start">
+              <el-input v-model="ruleForm.start"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col class="line" :span="0.5">----</el-col>
+          <el-col :span="6">
+            <el-form-item prop="end">
+              <el-input v-model="ruleForm.end"></el-input>
+            </el-form-item>
+          </el-col>
         </el-form-item>
-      </el-col>
-    </el-form-item>
-    <br>
-    <el-form-item>
-      <el-button type="primary" @click="submitForm('ruleForm')">确定</el-button>
-      <el-button @click="resetForm('ruleForm')">重置</el-button>
-    </el-form-item>
-  </el-form>
+        <br>
+        <el-form-item>
+          <el-button type="primary" @click="submitForm('ruleForm')">确定</el-button>
+          <el-button @click="resetForm('ruleForm')">重置</el-button>
+        </el-form-item>
+      </el-form>
+    </el-col>
+    <el-col :span="12">
+      <!-- <div id="line"></div> -->
+    </el-col>
+  </el-row>
+  <div id="line"></div>
+  </div>
 </template>
 <script>
-  export default {
-    name: 'Draw',
-    data () {
-      return {
-        ruleForm: {
-          name: '',
-          region: '',
-          date1: '',
-          date2: '',
-          delivery: false,
-          type: [],
-          resource: '',
-          desc: ''
-        },
-        rules: {
-          name: [
-            {required: true, message: '请输入活动名称', trigger: 'blur'},
-            {min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur'}
-          ],
-          region: [
-            {required: true, message: '请选择活动区域', trigger: 'change'}
-          ],
-          date1: [
-            {type: 'date', required: true, message: '请选择日期', trigger: 'change'}
-          ],
-          date2: [
-            {type: 'date', required: true, message: '请选择时间', trigger: 'change'}
-          ],
-          type: [
-            {type: 'array', required: true, message: '请至少选择一个活动性质', trigger: 'change'}
-          ],
-          resource: [
-            {required: true, message: '请选择活动资源', trigger: 'change'}
-          ],
-          desc: [
-            {required: true, message: '请填写活动形式', trigger: 'blur'}
-          ]
-        }
-      }
-    },
-    methods: {
-      submitForm (formName) {
-        this.$refs[formName].validate((valid) => {
-          if (valid) {
-            alert('submit!')
-          } else {
-            console.log('error submit!!')
-            return false
-          }
-        })
+import sql from 'sql.js'
+import fs from 'fs'
+import echarts from 'echarts'
+export default {
+  name: 'Draw',
+  data () {
+    return {
+      error: false,
+      errorInfo: '',
+      allPoints: this.readPoints(),
+      drawData: '',
+      ruleForm: {
+        point: '',
+        start: '',
+        end: ''
       },
-      resetForm (formName) {
-        this.$refs[formName].resetFields()
+      rules: {
+        point: [
+          {required: true, message: '请选择监测点', trigger: 'change'}
+        ],
+        start: [
+          {required: true, message: '请选择起始施工天数', trigger: 'change'}
+        ],
+        end: [
+          {required: true, message: '请选择终止施工天数', trigger: 'change'}
+        ]
       }
     }
+  },
+  methods: {
+    submitForm (formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
+          let db = new sql.Database(fileBuffer)
+          let queryMonitorVals = `SELECT days, monitorValues FROM "${this.ruleForm.point}" 
+                                  WHERE days >= ${this.ruleForm.start} AND days <= ${this.ruleForm.end}`
+          let monitorVals = db.exec(queryMonitorVals)
+          if (monitorVals.length === 0) {
+            this.error = true
+            this.errorInfo = '当前监测点还没有上传过数据！或者查询时间范围有误，请确认后再输入'
+            return false
+          }
+          debugger
+          monitorVals = monitorVals[0].values
+          let keys = []
+          let vals = []
+          for (let i = 0; i < monitorVals.length; i++) {
+            keys.push(monitorVals[i][0])
+            vals.push(monitorVals[i][1])
+          }
+          this.draw(this.ruleForm.point, keys, vals)
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
+    },
+    resetForm (formName) {
+      this.$refs[formName].resetFields()
+    },
+    readPoints () {
+      let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
+      let db = new sql.Database(fileBuffer)
+      let queryAllMonitorPoints = `SELECT id, name FROM monitorPoints WHERE projectId = ${this.$route.params.id}`
+      let allMonitorPoints = db.exec(queryAllMonitorPoints)
+      if (allMonitorPoints.length === 0) {
+        allMonitorPoints = []
+      } else {
+        allMonitorPoints = allMonitorPoints[0].values
+      }
+      return allMonitorPoints
+    },
+    draw (point, x, y) {
+      debugger
+      let line = echarts.init(document.getElementById('line'))
+      let option = {
+        title: {
+          text: `${point}历史监测数据变化趋势`
+        },
+        xAxis: {
+          data: x
+        },
+        yAxis: {
+          type: 'value'
+        },
+        series: [{
+          data: y,
+          type: 'line'
+        }]
+      }
+      line.setOption(option)
+    }
   }
+}
 </script>

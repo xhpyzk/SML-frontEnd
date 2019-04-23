@@ -59,7 +59,12 @@ export default {
     let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
     let db = new sql.Database(fileBuffer)
     let queryMonitorContent = 'SELECT * FROM monitorContent'
-    let monitorContents = db.exec(queryMonitorContent)[0].values
+    let monitorContents = db.exec(queryMonitorContent)
+    if (monitorContents.length === 0) {
+      monitorContents = []
+    } else {
+      monitorContents = monitorContents[0].values
+    }
     return {
       labelPosition: 'right',
       monitorContents,

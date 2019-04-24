@@ -3,7 +3,7 @@
   <el-row>
     <el-col :span="10">
       <el-alert
-        title="errorInfo"
+        :title="errorInfo"
         type="error"
         center
         :show-icon="true"
@@ -41,7 +41,7 @@
       </el-form>
     </el-col>
     <el-col :span="12">
-      <!-- <div id="line"></div> -->
+      <ve-line :data="chartData" :title="title"></ve-line>
     </el-col>
   </el-row>
   <div id="line"></div>
@@ -50,11 +50,17 @@
 <script>
 import sql from 'sql.js'
 import fs from 'fs'
-import echarts from 'echarts'
+import VeLine from 'v-charts/lib/line.common'
+import 'echarts/lib/component/title'
 export default {
   name: 'Draw',
+  components: {
+    VeLine
+  },
   data () {
     return {
+      chartData: {},
+      title: {},
       error: false,
       errorInfo: '',
       allPoints: this.readPoints(),
@@ -83,7 +89,7 @@ export default {
         if (valid) {
           let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
           let db = new sql.Database(fileBuffer)
-          let queryMonitorVals = `SELECT days, monitorValues FROM "${this.ruleForm.point}" 
+          let queryMonitorVals = `SELECT days, hours, monitorValues FROM "${this.ruleForm.point}" 
                                   WHERE days >= ${this.ruleForm.start} AND days <= ${this.ruleForm.end}`
           let monitorVals = db.exec(queryMonitorVals)
           if (monitorVals.length === 0) {
@@ -91,13 +97,12 @@ export default {
             this.errorInfo = '当前监测点还没有上传过数据！或者查询时间范围有误，请确认后再输入'
             return false
           }
-          debugger
           monitorVals = monitorVals[0].values
           let keys = []
           let vals = []
           for (let i = 0; i < monitorVals.length; i++) {
-            keys.push(monitorVals[i][0])
-            vals.push(monitorVals[i][1])
+            keys.push(`${monitorVals[i][0]}/${monitorVals[i][1]}`)
+            vals.push(monitorVals[i][2])
           }
           this.draw(this.ruleForm.point, keys, vals)
         } else {
@@ -108,6 +113,7 @@ export default {
     },
     resetForm (formName) {
       this.$refs[formName].resetFields()
+      this.isShow = false
     },
     readPoints () {
       let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
@@ -123,23 +129,19 @@ export default {
     },
     draw (point, x, y) {
       debugger
-      let line = echarts.init(document.getElementById('line'))
-      let option = {
-        title: {
-          text: `${point}历史监测数据变化趋势`
-        },
-        xAxis: {
-          data: x
-        },
-        yAxis: {
-          type: 'value'
-        },
-        series: [{
-          data: y,
-          type: 'line'
-        }]
+      let columns = ['监测天数', '监测值']
+      let rows = new Array(x.length)
+      for (let i = 0; i < x.length; i++) {
+        rows[i] = {'监测天数': x[i], '监测值': y[i]}
       }
-      line.setOption(option)
+      this.title = {
+        left: 'cneter',
+        text: `${point}监测数据走势图`
+      }
+      this.chartData = {
+        columns,
+        rows
+      }
     }
   }
 }

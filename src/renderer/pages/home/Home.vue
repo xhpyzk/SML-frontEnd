@@ -16,30 +16,14 @@
       <a-layout-footer>
         <a-row>
           <a-col :span="8" :offset="4">
-            <a-button type="dashed" size="large" @click="showModal">新建工程</a-button>
-            <modal v-show="isVisible" @close="closeModal">
-              <div slot="header">
-                <h3>新建工程</h3>
-                <button type="button" class="btn-close" @click="closeModal">x</button>
-              </div>
-              <div class="content" slot="body">
-                
-              </div>
-              <a-button type="dashed" size="large" slot="footer" @click="closeModal">确定</a-button>
-            </modal>
+            <a-button type="dashed" size="large" @click="showModal('新建工程')">新建工程</a-button>
           </a-col>
+          <div>
+          <edialog :isVisible="isVisible" :VisibleType="VisibleType" v-on:edialogEvent="closeEdialog"></edialog>
+        </div>
           <a-col :span="8">
-            <a-button type="dashed" size="large" @click="showModal">加入工程</a-button>
-            <modal v-show="isVisible" @close="closeModal">
-              <div slot="header">
-                <h3>加入工程</h3>
-                <button type="button" class="btn-close" @click="closeModal">x</button>
-              </div>
-              <div class="content" slot="body">
-                
-              </div>
-              <a-button type="dashed" size="large" slot="footer" @click="closeModal">确定</a-button>
-            </modal>
+            <a-button type="dashed" size="large" @click="showModal('加入工程')">加入工程</a-button>
+            <edialog :isVisible="isVisible" :VisibleType="VisibleType" v-on:edialogEvent="closeEdialog"></edialog>
           </a-col>
         </a-row>
       </a-layout-footer>
@@ -48,7 +32,7 @@
 </template>
 
 <script>
-import Modal from './components/modal.vue'
+import Edialog from './components/edialog.vue'
 const columns = [
   { title: '编号', dataIndex: '编号', key: '编号' },
   { title: '工程项目', dataIndex: '工程项目', key: '工程项目' },
@@ -89,23 +73,23 @@ const data = [
 export default {
   name: 'Home',
   components: {
-    Modal
+    Edialog
   },
   data () {
     return {
       data,
       columns,
-      isVisible: false
+      isVisible: false,
+      VisibleType: '新建工程'
     }
   },
   methods: {
     handleClick (record, index) {
-      // alert(index)
       return {
         on: {
           click: () => {
             this.$router.push({
-              name: 'Project',
+              name: '/project',
               params: {
                 id: index
               }
@@ -114,16 +98,13 @@ export default {
         }
       }
     },
-    showModal () {
+    showModal (message) {
       this.isVisible = true
+      this.VisibleType = message
+      console.log(message)
     },
-    handleOk (e) {
-      this.ModalText = 'The modal will be closed after two seconds'
-      this.confirmLoading = true
-      setTimeout(() => {
-        this.visible = false
-        this.confirmLoading = false
-      }, 2000)
+    closeEdialog (data) {
+      this.isVisible = data
     },
     closeModal () {
       this.isVisible = false

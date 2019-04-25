@@ -7,39 +7,95 @@
       <a-layout-content>
         <h2>当前所有工程：</h2>
         <div class="table-style">
-          <a-table :columns="columns" :dataSource="data" :customRow="handleClick">
-            <a slot="action" href="javascript:;">删除</a>
-            <p slot="expandedRowRender" slot-scope="record" style="margin: 0">{{record.description}}</p>
-          </a-table>
+          <el-table
+            :data="tableData"
+            style="width: 100%"
+            @cell-click="handleCellClick">
+            <el-table-column
+              label="编号"
+              prop="id">
+            </el-table-column>
+            <el-table-column
+              label="名称"
+              prop="name">
+            </el-table-column>
+            <el-table-column
+              label="x 坐标"
+              prop="xCoordinate">
+            </el-table-column>
+            <el-table-column
+              label="y 坐标"
+              prop="yCoordinate">
+            </el-table-column>
+            <el-table-column
+              label="经度"
+              prop="longitude">
+            </el-table-column>
+            <el-table-column
+              label="纬度"
+              prop="latitude">
+            </el-table-column>
+            <el-table-column
+              label="备注"
+              prop="description">
+            </el-table-column>
+            <el-table-column
+              align="right">
+              <template slot="header">
+                删除
+              </template>
+              <template slot-scope="scope">
+                <el-button
+                  size="mini"
+                  type="danger"
+                  @click="handleDelete(scope.$index, scope.row)">
+                  删除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <el-pagination
+            :page-size="pageSize"
+            :pager-count="11"
+            layout="prev, pager, next"
+            :total="totalItems"
+            @current-change="handleCurrentChange"
+          >
+          </el-pagination>
         </div>
       </a-layout-content>
       <a-layout-footer>
         <a-row>
-          <a-col :span="8" :offset="4">
-            <a-button type="dashed" size="large" @click="showModal">新建工程</a-button>
-            <modal v-show="isVisible" @close="closeModal">
-              <div slot="header">
-                <h3>新建工程</h3>
-                <button type="button" class="btn-close" @click="closeModal">x</button>
-              </div>
-              <div class="content" slot="body">
-                
-              </div>
-              <a-button type="dashed" size="large" slot="footer" @click="closeModal">确定</a-button>
-            </modal>
-          </a-col>
-          <a-col :span="8">
-            <a-button type="dashed" size="large" @click="showModal">加入工程</a-button>
-            <modal v-show="isVisible" @close="closeModal">
-              <div slot="header">
-                <h3>加入工程</h3>
-                <button type="button" class="btn-close" @click="closeModal">x</button>
-              </div>
-              <div class="content" slot="body">
-                
-              </div>
-              <a-button type="dashed" size="large" slot="footer" @click="closeModal">确定</a-button>
-            </modal>
+          <a-col :span="8" :offset="8">
+            <el-button type="primary" @click="dialogFormVisible = true">新建工程</el-button>
+            <el-dialog title="新建工程" :visible.sync="dialogFormVisible">
+              <el-form :model="ruleForm" :rules="rules" ref="ruleForm" 
+              label-width="120px" class="demo-ruleForm" size="large"
+              >
+                <el-form-item label="工程名" prop="name">
+                  <el-input v-model="ruleForm.name"></el-input>
+                </el-form-item>
+                <el-form-item label="控制点 x 坐标" prop="xCoordinate">
+                  <el-input v-model="ruleForm.xCoordinate"></el-input>
+                </el-form-item>
+                <el-form-item label="控制点 y 坐标" prop="yCoordinate">
+                  <el-input v-model="ruleForm.yCoordinate"></el-input>
+                </el-form-item>
+                <el-form-item label="控制点经度" prop="longitude">
+                  <el-input v-model="ruleForm.longitude"></el-input>
+                </el-form-item>
+                <el-form-item label="控制点纬度" prop="latitude">
+                  <el-input v-model="ruleForm.latitude"></el-input>
+                </el-form-item>
+                <el-form-item label="备注" prop="desc">
+                  <el-input type="textarea" v-model="ruleForm.desc"></el-input>
+                </el-form-item>
+                <el-form-item>
+                  <el-button type="primary" @click="submitForm('ruleForm')" size="medium">确认</el-button>
+                  <el-button @click="resetForm('ruleForm')" size="medium">重置</el-button>
+                </el-form-item>
+              </el-form>
+            </el-dialog>
           </a-col>
         </a-row>
       </a-layout-footer>
@@ -49,84 +105,142 @@
 
 <script>
 import Modal from './components/modal.vue'
-const columns = [
-  { title: '编号', dataIndex: '编号', key: '编号' },
-  { title: '工程项目', dataIndex: '工程项目', key: '工程项目' },
-  { title: '项目地点', dataIndex: '项目地点', key: '项目地点' },
-  {
-    title: 'Action',
-    dataIndex: '',
-    key: 'x',
-    scopedSlots: { customRender: 'action' }
-  }
-]
-const data = [
-  {
-    key: 1,
-    工程项目: 'John Brown',
-    编号: 1,
-    项目地点: 'New York No. 1 Lake Park',
-    description:
-      'My name is John Brown, I am 32 years old, living in New York No. 1 Lake Park.'
-  },
-  {
-    key: 2,
-    工程项目: 'Jim Green',
-    编号: 2,
-    项目地点: 'London No. 1 Lake Park',
-    description:
-      'My name is Jim Green, I am 42 years old, living in London No. 1 Lake Park.'
-  },
-  {
-    key: 3,
-    工程项目: 'Joe Black',
-    编号: 3,
-    项目地点: 'Sidney No. 1 Lake Park',
-    description:
-      'My name is Joe Black, I am 32 years old, living in Sidney No. 1 Lake Park.'
-  }
-]
+import fs from 'fs'
+import sql from 'sql.js'
 export default {
   name: 'Home',
   components: {
     Modal
   },
   data () {
+    let allProjects = this.readAllProjects()
+    let pageSize = 5
     return {
-      data,
-      columns,
-      isVisible: false
+      pageSize,
+      totalItems: allProjects.length,
+      isVisible: false,
+      tableData: allProjects.slice(0, pageSize),
+      dialogFormVisible: false,
+      ruleForm: {
+        name: '',
+        xCoordinate: '',
+        yCoordinate: '',
+        longitude: '',
+        latitude: '',
+        desc: ''
+      },
+      rules: {
+        name: [
+          { required: true, message: '请输入名称', trigger: 'blur' }
+        ],
+        xCoordinate: [
+          { required: true, message: '请输入 x 坐标', trigger: 'blur' }
+        ],
+        yCoordinate: [
+          { required: true, message: '请输入 y 坐标', trigger: 'blur' }
+        ],
+        longitude: [
+          {required: true, message: '请输入经度', trigger: 'blur'}
+        ],
+        latitude: [
+          {required: true, message: '请输入纬度', trigger: 'blur'}
+        ]
+      }
     }
   },
   methods: {
-    handleClick (record, index) {
-      // alert(index)
-      return {
-        on: {
-          click: () => {
-            this.$router.push({
-              name: 'Project',
-              params: {
-                id: index
-              }
-            })
-          }
+    handleDelete (index, row) {
+      let projectId = row.id
+      let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
+      let db = new sql.Database(fileBuffer)
+      let queryMonitorPoints = `SELECT name FROM monitorPoints WHERE projectId = ${projectId};`
+      let deleteMonitorPointTables = db.exec(queryMonitorPoints)
+      let deleteProject = `DELETE FROM projects WHERE id = ${projectId};`
+      let deleteMonitorPoints = `DELETE FROM monitorPoints WHERE projectId = ${projectId};`
+      let deleteItems = deleteProject + deleteMonitorPoints
+      if (deleteMonitorPointTables.length !== 0) {
+        deleteMonitorPointTables = deleteMonitorPointTables[0].values
+        for (let i = 0; i < deleteMonitorPointTables.length; i++) {
+          deleteItems += `DROP TABLE "main"."${deleteMonitorPointTables[i]}";`
         }
       }
+      db.run(deleteItems)
+      let data = db.export()
+      let buffer = Buffer.from(data)
+      fs.writeFileSync('src/database/sml.sqlite', buffer)
+      alert('success')
+      location.reload()
     },
-    showModal () {
-      this.isVisible = true
+    handleCellClick (row, column, cell, event) {
+      if (column.label === '名称') {
+        let projectId = row.id
+        this.$router.push({
+          name: 'Project',
+          params: {
+            id: projectId
+          }
+        })
+      }
     },
-    handleOk (e) {
-      this.ModalText = 'The modal will be closed after two seconds'
-      this.confirmLoading = true
-      setTimeout(() => {
-        this.visible = false
-        this.confirmLoading = false
-      }, 2000)
+    handleCurrentChange (val) {
+      let start = this.pageSize * (val - 1)
+      let end = this.pageSize * val
+      this.tableData = this.allData.slice(start, end)
     },
-    closeModal () {
-      this.isVisible = false
+    readAllProjects () {
+      let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
+      let db = new sql.Database(fileBuffer)
+      let queryAllProjects = `SELECT * FROM projects`
+      let allProjects = db.exec(queryAllProjects)
+      if (allProjects.length === 0) return []
+      let values = allProjects[0].values
+      let keys = allProjects[0].columns
+      let items = []
+      let item
+      for (let i = 0; i < values.length; i++) {
+        item = {}
+        for (let j = 0; j < values[i].length; j++) {
+          item[keys[j]] = values[i][j]
+        }
+        items.push(item)
+      }
+      return items
+    },
+    submitForm (form) {
+      this.$refs[form].validate((valid) => {
+        if (valid) {
+          alert('saving')
+          this.saveData()
+          this.dialogFormVisible = false
+          this.resetForm(form)
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
+    },
+    resetForm (formName) {
+      this.$refs[formName].resetFields()
+    },
+    saveData () {
+      let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
+      let db = new sql.Database(fileBuffer)
+      debugger
+      let insertSql = `INSERT INTO projects (
+        name, xCoordinate, yCoordinate, longitude, latitude, description
+      ) VALUES (
+        "${this.ruleForm.name}", 
+        ${this.ruleForm.xCoordinate},
+        ${this.ruleForm.yCoordinate},
+        ${this.ruleForm.longitude},
+        ${this.ruleForm.latitude},
+        "${this.ruleForm.desc}"
+      )`
+      db.run(insertSql)
+      let data = db.export()
+      let buffer = Buffer.from(data)
+      fs.writeFileSync('src/database/sml.sqlite', buffer)
+      alert('success')
     }
   }
 }
@@ -181,6 +295,6 @@ export default {
   padding: 26px 16px 16px;
 }
 .table-style {
-  margin: 40px;
+  margin: 50px 200px 0 200px;
 }
 </style>

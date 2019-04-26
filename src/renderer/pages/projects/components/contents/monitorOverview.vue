@@ -90,7 +90,7 @@ export default {
     onChange (event) {
       let file = event.target.files[0]
       let reader = new FileReader()
-      reader.onload = function (evt) {
+      reader.onload = evt => {
         try {
           let data = evt.target.result
           let workbook = XLSX.read(data, {
@@ -106,7 +106,6 @@ export default {
           }
           // let fileRows = buildings.length - 1
           // 读取已经存在的所有监测点
-          debugger
           let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
           let db = new sql.Database(fileBuffer)
           let uploadData
@@ -169,7 +168,6 @@ export default {
         let attention = 0
         let warning = 0
         let danger = 0
-        // debugger
         for (let n = 0; n < values.length; n++) {
           if (uniqueMonitorContent[m] === monitorContentMap[values[n][2]]) {
             let queryMonitorVal = `SELECT monitorValues FROM "${values[n][0]}"`

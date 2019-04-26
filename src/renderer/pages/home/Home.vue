@@ -229,7 +229,6 @@ export default {
     saveData () {
       let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
       let db = new sql.Database(fileBuffer)
-      debugger
       let insertSql = `INSERT INTO projects (
         name, xCoordinate, yCoordinate, longitude, latitude, description
       ) VALUES (
@@ -252,6 +251,9 @@ export default {
 
 
 <style>
+.table-style tr > td:nth-child(2):hover {
+  cursor: pointer
+}
 #components-layout-demo-basic {
   text-align: center;
 }

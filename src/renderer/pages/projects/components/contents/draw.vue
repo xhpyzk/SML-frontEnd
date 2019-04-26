@@ -128,7 +128,6 @@ export default {
       return allMonitorPoints
     },
     draw (point, x, y) {
-      debugger
       let columns = ['监测天数', '监测值']
       let rows = new Array(x.length)
       for (let i = 0; i < x.length; i++) {

@@ -117,6 +117,7 @@ export default {
     let pageSize = 5
     return {
       pageSize,
+      allProjects,
       totalItems: allProjects.length,
       isVisible: false,
       tableData: allProjects.slice(0, pageSize),
@@ -169,7 +170,8 @@ export default {
       let buffer = Buffer.from(data)
       fs.writeFileSync('src/database/sml.sqlite', buffer)
       alert('success')
-      location.reload()
+      this.allProjects = this.readAllProjects()
+      this.tableData = this.allProjects.slice(0, this.pageSize)
     },
     handleCellClick (row, column, cell, event) {
       if (column.label === '名称') {
@@ -185,7 +187,7 @@ export default {
     handleCurrentChange (val) {
       let start = this.pageSize * (val - 1)
       let end = this.pageSize * val
-      this.tableData = this.allData.slice(start, end)
+      this.tableData = this.allProjects.slice(start, end)
     },
     readAllProjects () {
       let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
@@ -212,6 +214,8 @@ export default {
           alert('saving')
           this.saveData()
           this.dialogFormVisible = false
+          this.allProjects = this.readAllProjects()
+          this.tableData = this.allProjects.slice(0, this.pageSize)
           this.resetForm(form)
         } else {
           console.log('error submit!!')

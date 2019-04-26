@@ -106,6 +106,7 @@ export default {
           }
           // let fileRows = buildings.length - 1
           // 读取已经存在的所有监测点
+          debugger
           let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
           let db = new sql.Database(fileBuffer)
           let uploadData
@@ -127,11 +128,12 @@ export default {
             let data = db.export()
             let buffer = Buffer.from(data)
             fs.writeFileSync('src/database/sml.sqlite', buffer)
-            alert('success')
           }
         } catch (e) {
           console.log('文件类型不正确', e)
         }
+        this.allData = this.readData()
+        this.tableData = this.allData.slice(0, this.pageSize)
       }
       reader.readAsBinaryString(file)
     },
@@ -140,10 +142,14 @@ export default {
       let db = new sql.Database(fileBuffer)
       let queryAllMonitorPoints = `SELECT name, maxControlval, monitorContentId FROM monitorPoints WHERE projectId = ${this.$route.params.id}`
       let allMonitorPoints = db.exec(queryAllMonitorPoints)
-      // let keys = allMonitorPoints[0].columns
+      if (allMonitorPoints.length === 0) {
+        return []
+      }
       let values = allMonitorPoints[0].values
       let queryAllMonitorContent = `SELECT * FROM monitorContent`
-      let allMonitorContent = db.exec(queryAllMonitorContent)[0].values
+      let allMonitorContent = db.exec(queryAllMonitorContent)
+      if (allMonitorContent.length === 0) return []
+      allMonitorContent = allMonitorContent[0].values
       // 构造监测内容 id 哈希表
       let monitorContentMap = {}
       for (let j = 0; j < allMonitorContent.length; j++) {
@@ -163,6 +169,7 @@ export default {
         let attention = 0
         let warning = 0
         let danger = 0
+        // debugger
         for (let n = 0; n < values.length; n++) {
           if (uniqueMonitorContent[m] === monitorContentMap[values[n][2]]) {
             let queryMonitorVal = `SELECT monitorValues FROM "${values[n][0]}"`

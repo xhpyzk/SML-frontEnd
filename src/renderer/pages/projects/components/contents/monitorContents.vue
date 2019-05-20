@@ -71,7 +71,7 @@ export default {
       let data = db.export()
       let buffer = Buffer.from(data)
       fs.writeFileSync('src/database/sml.sqlite', buffer)
-      alert('success')
+      // alert('success')
     }
   }
 }

@@ -169,7 +169,7 @@ export default {
       let data = db.export()
       let buffer = Buffer.from(data)
       fs.writeFileSync('src/database/sml.sqlite', buffer)
-      alert('success')
+      // alert('success')
       this.allProjects = this.readAllProjects()
       this.tableData = this.allProjects.slice(0, this.pageSize)
     },
@@ -211,14 +211,14 @@ export default {
     submitForm (form) {
       this.$refs[form].validate((valid) => {
         if (valid) {
-          alert('saving')
+          // alert('saving')
           this.saveData()
           this.dialogFormVisible = false
           this.allProjects = this.readAllProjects()
           this.tableData = this.allProjects.slice(0, this.pageSize)
           this.resetForm(form)
         } else {
-          console.log('error submit!!')
+          // console.log('error submit!!')
           return false
         }
       })
@@ -243,7 +243,7 @@ export default {
       let data = db.export()
       let buffer = Buffer.from(data)
       fs.writeFileSync('src/database/sml.sqlite', buffer)
-      alert('success')
+      // alert('success')
     }
   }
 }

@@ -54,7 +54,6 @@ export default {
       let queryProjectDesc = `select desc from projectOverview where projectId = ${this.$route.params.id}`
       let queryRes = db.exec(queryProjectDesc)
       let descs
-      debugger
       if (queryRes.length === 0) {
         descs = ''
       } else {

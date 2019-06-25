@@ -1,6 +1,6 @@
 <template>
   <a-col :span="18">
-    <h1>模拟边坡工程</h1>
+    <h1>{{ project }}</h1>
       <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm margin-right">
         <el-form-item label="请输入描述" prop="desc">
           <el-input type="textarea" v-model="ruleForm.desc"></el-input>
@@ -22,7 +22,17 @@ export default {
   name: 'ProjectOverview',
   data () {
     let projectDesc = this.readData()
+    let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
+    let db = new sql.Database(fileBuffer)
+    let readProject = db.exec(`SELECT name FROM projects WHERE id = ${this.$route.params.id}`)
+    let project
+    if (readProject.length === 0) {
+      project = ''
+    } else {
+      project = readProject[0].values[0][0]
+    }
     return {
+      project,
       projectDesc,
       ruleForm: {
         desc: ''

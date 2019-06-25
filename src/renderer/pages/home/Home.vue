@@ -2,7 +2,7 @@
   <div id="components-layout-demo-basic">
     <a-layout>
       <a-layout-header>
-        <h1>你好，XXX</h1>
+        <h1>你好，欢迎使用</h1>
       </a-layout-header>
       <a-layout-content>
         <h2>当前所有工程：</h2>

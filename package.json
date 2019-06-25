@@ -75,6 +75,7 @@
     "xlsx": "^0.14.2"
   },
   "devDependencies": {
+    "@ant-design/icons": "^1.1.16",
     "ajv": "^6.5.0",
     "babel-core": "^6.26.3",
     "babel-eslint": "^8.2.3",
@@ -119,6 +120,7 @@
     "karma-webpack": "^3.0.0",
     "mini-css-extract-plugin": "0.4.0",
     "mocha": "^5.2.0",
+    "mousetrap": "^1.6.3",
     "multispinner": "^0.2.1",
     "node-loader": "^0.6.0",
     "node-sass": "^4.9.2",
@@ -131,7 +133,7 @@
     "vue-loader": "^15.2.4",
     "vue-style-loader": "^4.1.0",
     "vue-template-compiler": "^2.5.16",
-    "webpack": "^4.0.0",
+    "webpack": "^4.3.0",
     "webpack-cli": "^3.0.8",
     "webpack-dev-server": "^3.1.4",
     "webpack-hot-middleware": "^2.22.2",

@@ -1,7 +1,7 @@
 <template>
   <a-row class="project-header">
     <a-col :span="6">
-      <h2>xxx工程</h2>
+      <h2>{{ project }}</h2>
     </a-col>
     <a-col :span="12">
       <p class="overview-style">工程概况</p>
@@ -13,8 +13,24 @@
 </template>
 
 <script>
+import fs from 'fs'
+import sql from 'sql.js'
 export default {
   name: 'ProjectHeader',
+  data () {
+    let fileBuffer = fs.readFileSync('src/database/sml.sqlite')
+    let db = new sql.Database(fileBuffer)
+    let readProject = db.exec(`SELECT name FROM projects WHERE id = ${this.$route.params.id}`)
+    let project
+    if (readProject.length === 0) {
+      project = ''
+    } else {
+      project = readProject[0].values[0][0]
+    }
+    return {
+      project
+    }
+  },
   methods: {
     backHome () {
       this.$router.push('/')
@@ -46,5 +62,8 @@ h2, h3 {
   text-align: center;
   line-height: 50px;
   font-size: 30px;
+}
+.project-header > div:nth-child(3) h3:hover {
+  cursor: pointer;
 }
 </style>
